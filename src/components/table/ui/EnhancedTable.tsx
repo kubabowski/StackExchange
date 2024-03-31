@@ -4,27 +4,91 @@ import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
 import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
-import TableSortLabel from "@mui/material/TableSortLabel";
 import Paper from "@mui/material/Paper";
-import { visuallyHidden } from "@mui/utils";
-import EnhancedTableHead from "./EnhancedTableHead";
 import {
-  descendingComparator,
+  // EnhancedTableHeadProps,
   Order,
   getComparator,
+  // headCells,
   stableSort,
-} from "../utils/sort";
-import { Data, rows } from "../utils/data";
+} from "..";
 
-export default function EnhancedTable() {
+import { Data, rows } from "..";
+
+import TableHead from "@mui/material/TableHead";
+import TableSortLabel from "@mui/material/TableSortLabel";
+import { visuallyHidden } from "@mui/utils";
+
+export interface HeadCell {
+  id: keyof Data;
+  numeric: boolean;
+  disablePadding: boolean;
+  label: string;
+}
+
+export interface EnhancedTableHeadProps {
+  numSelected: number;
+  onRequestSort: (
+    event: React.MouseEvent<unknown>,
+    property: keyof Data
+  ) => void;
+  order: Order;
+  orderBy: string;
+  rowCount: number;
+  headCells: readonly HeadCell[];
+}
+
+function EnhancedTableHead(props: EnhancedTableHeadProps) {
+  const { order, orderBy, onRequestSort, headCells } = props;
+  const createSortHandler =
+    (property: keyof Data) => (event: React.MouseEvent<unknown>) => {
+      onRequestSort(event, property);
+    };
+
+  return (
+    <TableHead>
+      <TableRow>
+        <TableCell padding="checkbox">L. P.</TableCell>
+        {headCells.map((headCell) => (
+          <TableCell
+            key={headCell.id}
+            align={headCell.numeric ? "right" : "left"}
+            padding={headCell.disablePadding ? "none" : "normal"}
+            sortDirection={orderBy === headCell.id ? order : false}
+          >
+            <TableSortLabel
+              active={orderBy === headCell.id}
+              direction={orderBy === headCell.id ? order : "asc"}
+              onClick={createSortHandler(headCell.id)}
+            >
+              {headCell.label}
+              {orderBy === headCell.id ? (
+                <Box component="span" sx={visuallyHidden}>
+                  {order === "desc" ? "sorted descending" : "sorted ascending"}
+                </Box>
+              ) : null}
+            </TableSortLabel>
+          </TableCell>
+        ))}
+      </TableRow>
+    </TableHead>
+  );
+}
+
+export interface EnhancedTableProps {
+  headCells: readonly HeadCell[];
+}
+
+export default function EnhancedTable(props: EnhancedTableProps) {
   const [order, setOrder] = React.useState<Order>("desc");
   const [orderBy, setOrderBy] = React.useState<keyof Data>("questions");
   const [selected, setSelected] = React.useState<readonly number[]>([]);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
+
+  const { headCells } = props;
 
   const handleRequestSort = (
     event: React.MouseEvent<unknown>,
@@ -33,15 +97,6 @@ export default function EnhancedTable() {
     const isAsc = orderBy === property && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
     setOrderBy(property);
-  };
-
-  const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.checked) {
-      const newSelected = rows.map((n) => n.id);
-      setSelected(newSelected);
-      return;
-    }
-    setSelected([]);
   };
 
   const handleChangePage = (event: unknown, newPage: number) => {
@@ -89,13 +144,13 @@ export default function EnhancedTable() {
               numSelected={selected.length}
               order={order}
               orderBy={orderBy}
-              onSelectAllClick={handleSelectAllClick}
               onRequestSort={handleRequestSort}
               rowCount={rows.length}
+              headCells={headCells}
             />
             <TableBody>
               {visibleRows.map((row, index) => {
-                const labelId = `enhanced-table-checkbox-${index}`;
+                const labelId = `${index}`;
 
                 return (
                   <TableRow
@@ -105,7 +160,7 @@ export default function EnhancedTable() {
                     key={row.id}
                     sx={{ cursor: "pointer" }}
                   >
-                    <TableCell padding="checkbox">{index + 1}</TableCell>
+                    <TableCell>{index + 1}</TableCell>
                     <TableCell
                       component="th"
                       id={labelId}
