@@ -1,15 +1,14 @@
 import axios from "axios";
 
-interface Tag {
-  name: string;
-  count: number;
+export interface Data {
+  [key: string]: any;
 }
 
 export const stackExchangeApi = axios.create({
   baseURL: "https://api.stackexchange.com/2.3/tags",
 });
 
-export async function fetchTagsByNumber(number: number): Promise<Tag[]> {
+export async function fetchTagsByNumber(number: number): Promise<Data[]> {
   try {
     const pageSize = Math.min(number, 100);
     const page = Math.ceil(number / pageSize);
@@ -18,14 +17,17 @@ export async function fetchTagsByNumber(number: number): Promise<Tag[]> {
       `?site=stackoverflow&pagesize=${pageSize}&page=${page}`
     );
 
-    const tags: Tag[] = response.data.items.map((item: any) => ({
-      name: item.name,
-      count: item.count,
-    }));
+    const data: Data[] = response.data.items.map((item: any) => {
+      const data: Data = {};
+      for (const key in item) {
+        data[key] = item[key];
+      }
+      return data;
+    });
 
-    return tags;
+    return data;
   } catch (error) {
-    console.error("Error fetching tags:", error);
-    return [];
+    console.error("Error fetching data:", error);
+    throw error;
   }
 }

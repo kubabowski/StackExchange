@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useEffect } from "react";
 import EnhancedTable from "./ui/EnhancedTable";
 
-import { fetchTagsByNumber } from "../../utils";
+import { Data, fetchTagsByNumber } from "../../utils";
+import { useDataContext } from "../../DataContext";
 
 export function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
   if (b[orderBy] < a[orderBy]) {
@@ -46,27 +47,27 @@ export function stableSort<T>(
   return stabilizedThis.map((el) => el[0]);
 }
 
-// export interface HeadCell {
-//   id: keyof Data;
-//   numeric: boolean;
-//   disablePadding: boolean;
-//   label: string;
-// }
+export interface HeadCell {
+  id: keyof Data;
+  numeric: boolean;
+  disablePadding: boolean;
+  label: string;
+}
 
-// export const headCells: readonly HeadCell[] = [
-//   {
-//     id: "name",
-//     numeric: false,
-//     disablePadding: true,
-//     label: "Tag",
-//   },
-//   {
-//     id: "questions",
-//     numeric: true,
-//     disablePadding: false,
-//     label: "Liczba powiązanych pytań",
-//   },
-// ];
+export const headCells: readonly HeadCell[] = [
+  {
+    id: "name",
+    numeric: false,
+    disablePadding: true,
+    label: "Tag",
+  },
+  {
+    id: "questions",
+    numeric: true,
+    disablePadding: false,
+    label: "Liczba powiązanych pytań",
+  },
+];
 
 // export interface Data {
 //   id: number;
@@ -74,42 +75,60 @@ export function stableSort<T>(
 //   questions: number;
 // }
 
-// let rows: Data[] = [];
+let rows: Data[] = [];
 
-// export async function fetchAndUpdateRows(
-//   page: number = 1
-// ): Promise<Data[] | undefined> {
-//   try {
-//     const tags = await fetchTagsByNumber(150);
-//     const fetchedRows: Data[] = tags.map((item: any, index: number) => ({
-//       id: index + 1,
-//       name: item.name,
-//       questions: item.count,
-//     }));
-//     return fetchedRows;
-//   } catch (error) {
-//     console.error("Error fetching data:", error);
-//     return undefined;
-//   }
-// }
+interface TableProps {
+  // fetchDataFunction: () => Promise<Data[] | undefined>;
+  fetchDataFunction: () => Promise<Data[] | undefined>;
+}
 
-// async function initializeRows() {
-//   const fetchedRows = await fetchAndUpdateRows();
-//   if (fetchedRows && fetchedRows.length > 0) {
-//     rows = fetchedRows;
-//   }
-// }
+export { rows };
 
-// initializeRows();
+const Table: React.FC<TableProps> = ({ fetchDataFunction }) => {
+  const { loading, error } = useDataContext();
+  useEffect(() => {
+    async function fetchAndUpdateRows(
+      page: number = 1
+    ): Promise<Data[] | undefined> {
+      try {
+        const data = await fetchDataFunction();
+        if (data) {
+          const fetchedRows: Data[] = data.map((item: any, index: number) => ({
+            id: index + 1,
+            name: item.name,
+            questions: item.count,
+          }));
+          return fetchedRows;
+        } else {
+          return [];
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        return undefined;
+      }
+    }
 
-// export { rows };
+    async function initializeRows() {
+      const fetchedRows = await fetchAndUpdateRows();
+      if (fetchedRows && fetchedRows.length > 0) {
+        rows = fetchedRows;
+      }
+    }
 
-interface tableProps {}
+    initializeRows();
+  }, [fetchDataFunction]);
 
-const Table = () => {
   return (
     <div>
-      <EnhancedTable headCells={headCells} />
+      {loading ? (
+        <p>Loading...</p>
+      ) : error ? (
+        <p>Error: {error.message}</p>
+      ) : (
+        <div>
+          <EnhancedTable headCells={headCells} />
+        </div>
+      )}
     </div>
   );
 };

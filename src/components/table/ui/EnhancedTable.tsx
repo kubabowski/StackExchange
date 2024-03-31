@@ -7,25 +7,21 @@ import TableContainer from "@mui/material/TableContainer";
 import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
-import {
-  // EnhancedTableHeadProps,
-  Order,
-  getComparator,
-  // headCells,
-  stableSort,
-} from "..";
+import { Order, getComparator, stableSort } from "..";
 
-import { Data, rows } from "..";
+import { rows } from "..";
+
+import { Data } from "../../../utils";
 
 import TableHead from "@mui/material/TableHead";
 import TableSortLabel from "@mui/material/TableSortLabel";
 import { visuallyHidden } from "@mui/utils";
 
 export interface HeadCell {
-  id: keyof Data;
-  numeric: boolean;
   disablePadding: boolean;
+  id: keyof Data;
   label: string;
+  numeric: boolean;
 }
 
 export interface EnhancedTableHeadProps {
@@ -35,7 +31,7 @@ export interface EnhancedTableHeadProps {
     property: keyof Data
   ) => void;
   order: Order;
-  orderBy: string;
+  orderBy: string | number;
   rowCount: number;
   headCells: readonly HeadCell[];
 }
@@ -55,7 +51,7 @@ function EnhancedTableHead(props: EnhancedTableHeadProps) {
           <TableCell
             key={headCell.id}
             align={headCell.numeric ? "right" : "left"}
-            padding={headCell.disablePadding ? "none" : "normal"}
+            padding="normal"
             sortDirection={orderBy === headCell.id ? order : false}
           >
             <TableSortLabel
@@ -136,7 +132,7 @@ export default function EnhancedTable(props: EnhancedTableProps) {
         />
         <TableContainer>
           <Table
-            sx={{ minWidth: 750 }}
+            sx={{ minWidth: 500 }}
             aria-labelledby="tableTitle"
             size="medium"
           >
