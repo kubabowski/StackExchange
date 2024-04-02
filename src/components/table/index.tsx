@@ -69,16 +69,9 @@ export const headCells: readonly HeadCell[] = [
   },
 ];
 
-// export interface Data {
-//   id: number;
-//   name: string;
-//   questions: number;
-// }
-
 let rows: Data[] = [];
 
 interface TableProps {
-  // fetchDataFunction: () => Promise<Data[] | undefined>;
   fetchDataFunction: () => Promise<Data[] | undefined>;
 }
 
