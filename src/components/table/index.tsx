@@ -120,15 +120,7 @@ const Table: React.FC<TableProps> = ({ fetchDataFunction }) => {
 
   return (
     <div>
-      {loading ? (
-        <p>Loading...</p>
-      ) : error ? (
-        <p>Error: {error.message}</p>
-      ) : (
-        <div>
-          <EnhancedTable headCells={headCells} />
-        </div>
-      )}
+      <EnhancedTable headCells={headCells} />
     </div>
   );
 };

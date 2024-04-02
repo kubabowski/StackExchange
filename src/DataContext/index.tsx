@@ -7,12 +7,10 @@ import React, {
 } from "react";
 import { fetchTagsByNumber } from "../utils";
 
-// Define your Data interface
 export interface Data {
   [key: string]: any;
 }
 
-// Create a context with initial values
 const DataContext = createContext<{
   loading: boolean;
   error: any;
@@ -23,23 +21,19 @@ const DataContext = createContext<{
   fetchData: () => new Promise(() => {}),
 });
 
-// Export a custom hook to access the context
 export const useDataContext = () => useContext(DataContext);
 
-// Context provider component
 export const DataContextProvider: React.FC<{
   children: ReactNode;
-  number: number;
+  number?: number;
 }> = ({ children, number }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<any>(null);
 
-  // Function to fetch data
   const fetchData = async (number: number) => {
     setLoading(true);
     try {
-      const fetchedData = await fetchTagsByNumber(number);
-      // setError(null);
+      await fetchTagsByNumber(number);
     } catch (error) {
       setError(error);
     } finally {
@@ -48,8 +42,9 @@ export const DataContextProvider: React.FC<{
   };
 
   useEffect(() => {
-    fetchData(number);
-    console.log(loading, error);
+    if (number !== undefined) {
+      fetchData(number);
+    }
   }, [number]);
 
   return (

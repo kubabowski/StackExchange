@@ -16,6 +16,8 @@ import { Data } from "../../../utils";
 import TableHead from "@mui/material/TableHead";
 import TableSortLabel from "@mui/material/TableSortLabel";
 import { visuallyHidden } from "@mui/utils";
+import { CircularProgress } from "@mui/material";
+import { useDataContext } from "../../../DataContext";
 
 export interface HeadCell {
   disablePadding: boolean;
@@ -81,8 +83,11 @@ export default function EnhancedTable(props: EnhancedTableProps) {
   const [order, setOrder] = React.useState<Order>("desc");
   const [orderBy, setOrderBy] = React.useState<keyof Data>("questions");
   const [selected, setSelected] = React.useState<readonly number[]>([]);
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [page, setPage] = React.useState<number>(0);
+  const [rowsPerPage, setRowsPerPage] = React.useState<number>(5);
+  const startIndex = page * rowsPerPage;
+  const { loading, error } = useDataContext();
+  console.log(loading);
 
   const { headCells } = props;
 
@@ -115,17 +120,18 @@ export default function EnhancedTable(props: EnhancedTableProps) {
         page * rowsPerPage,
         page * rowsPerPage + rowsPerPage
       ),
-    [order, orderBy, page, rowsPerPage]
+    [order, orderBy, page, rowsPerPage, loading]
   );
 
   return (
     <Box sx={{ width: "100%" }}>
-      <Paper sx={{ width: "100%", mb: 2 }}>
+      <Paper sx={{ width: "100%", mb: 2, backgroundColor: "#f8f8f8" }}>
         <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
+          rowsPerPageOptions={[5, 10, 25, 50, 100]}
           component="div"
           count={rows.length}
           rowsPerPage={rowsPerPage}
+          labelRowsPerPage="Wierszy na stronę:"
           page={page}
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
@@ -145,10 +151,20 @@ export default function EnhancedTable(props: EnhancedTableProps) {
               headCells={headCells}
             />
             <TableBody>
-              {visibleRows.map((row, index) => {
-                const labelId = `${index}`;
-
-                return (
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={3} align="center">
+                    <CircularProgress />
+                  </TableCell>
+                </TableRow>
+              ) : error ? (
+                <TableRow>
+                  <TableCell colSpan={3} align="center">
+                    Error: {error.message}
+                  </TableCell>
+                </TableRow>
+              ) : (
+                visibleRows.map((row, index) => (
                   <TableRow
                     hover
                     role="checkbox"
@@ -156,19 +172,13 @@ export default function EnhancedTable(props: EnhancedTableProps) {
                     key={row.id}
                     sx={{ cursor: "pointer" }}
                   >
-                    <TableCell>{index + 1}</TableCell>
-                    <TableCell
-                      component="th"
-                      id={labelId}
-                      scope="row"
-                      padding="none"
-                    >
-                      {row.name}
-                    </TableCell>
+                    <TableCell>{startIndex + index + 1}</TableCell>
+                    <TableCell>{row.name}</TableCell>
                     <TableCell align="right">{row.questions}</TableCell>
                   </TableRow>
-                );
-              })}
+                ))
+              )}
+
               {emptyRows > 0 && (
                 <TableRow
                   style={{
