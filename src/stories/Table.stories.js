@@ -10,7 +10,7 @@ export default {
 };
 
 export const defaultTable = () => {
-  const [inputValue, setInputValue] = useState(100);
+  const [inputValue, setInputValue] = useState("100");
   const [errorMessage, setErrorMessage] = useState("");
 
   const handleInputChange = (event) => {
@@ -20,7 +20,7 @@ export const defaultTable = () => {
   const fetchDataFunction = async () => {
     const parsedInputValue = parseInt(inputValue);
     if (isNaN(parsedInputValue)) {
-      return;
+      return await fetchTagsByNumber("not valid");
     }
     try {
       return await fetchTagsByNumber(parsedInputValue);
