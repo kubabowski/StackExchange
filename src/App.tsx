@@ -6,26 +6,27 @@ import { Box, TextField } from "@mui/material";
 import { DataContextProvider } from "./DataContext";
 
 function App() {
-  const [inputValue, setInputValue] = useState<number | undefined>(undefined);
+  const [inputValue, setInputValue] = useState<string>("");
   const [number, setNumber] = useState<number | undefined>(undefined);
+  const [isValidInput, setIsValidInput] = useState<boolean>(true);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(event.target.value);
-    setInputValue(isNaN(value) ? undefined : value);
-    setNumber(isNaN(value) ? undefined : value);
+    const value = event.target.value;
+    setInputValue(value);
+    const parsedValue = parseInt(value);
+    setNumber(isNaN(parsedValue) ? undefined : parsedValue);
+    setIsValidInput(
+      !isNaN(parsedValue) && parsedValue >= 1 && parsedValue <= 2500
+    );
   };
 
   const fetchDataFunction = () => {
-    if (typeof number === "number") {
-      console.log("number of questions is", number);
+    if (isValidInput) {
       return fetchTagsByNumber(number);
     } else {
-      console.log("number of questions is", "10");
       return fetchTagsByNumber(10);
     }
   };
-
-  fetchDataFunction();
 
   return (
     <DataContextProvider number={number ? number : undefined}>
@@ -33,13 +34,18 @@ function App() {
         <Box width={900} margin="auto" marginTop={10}>
           <section className="tags-table">
             <TextField
+              error={!isValidInput}
               id="outlined-number"
-              value={inputValue || ""}
-              label="Podaj liczbę tagów"
+              value={inputValue}
+              label={
+                isValidInput
+                  ? `Podaj liczbę tagów`
+                  : `Podaj liczbę pomiędzy 1 a 2500`
+              }
               variant="standard"
               name="number"
               onChange={handleInputChange}
-              sx={{ marginBottom: "15px" }}
+              sx={{ marginBottom: "15px", width: "300px" }}
             />
 
             <Table fetchDataFunction={fetchDataFunction} />

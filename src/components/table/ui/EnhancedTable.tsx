@@ -87,7 +87,7 @@ export default function EnhancedTable(props: EnhancedTableProps) {
   const [rowsPerPage, setRowsPerPage] = React.useState<number>(5);
   const startIndex = page * rowsPerPage;
   const { loading, error } = useDataContext();
-  console.log(loading);
+  // console.log(loading);
 
   const { headCells } = props;
 
