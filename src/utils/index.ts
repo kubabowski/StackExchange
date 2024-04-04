@@ -8,7 +8,12 @@ export const stackExchangeApi = axios.create({
   baseURL: "https://api.stackexchange.com/2.3/tags",
 });
 
-export async function fetchTagsByNumber(number: number): Promise<Data[]> {
+export async function fetchTagsByNumber(
+  number: number | string
+): Promise<Data[]> {
+  if (typeof number === "string") {
+    return [{ name: "Brak prawidłowego zapytania", questions: 0 }];
+  }
   try {
     const pageSize = Math.min(number, 100);
     const page = Math.ceil(number / pageSize);
